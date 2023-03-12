@@ -2,16 +2,36 @@ import pyotp
 from db.models.users import User
 
 
-
 def generate_key(db):
     key = pyotp.random_base32()
-    if is_unique(key, db):
+    if key_is_unique(key, db):
         return key
     generate_key(db)
 
 
-def is_unique(key, db):
+def key_is_unique(key, db):
     user = db.query(User).filter(User.otp_key == key).first()
+    if not user:
+        return True
+    return False
+
+
+def phone_number_is_unique(phone_number, db):
+    user = db.query(User).filter(User.phone_number == phone_number).first()
+    if not user:
+        return True
+    return False
+
+
+def username_is_unique(username, db):
+    user = db.query(User).filter(User.username == username).first()
+    if not user:
+        return True
+    return False
+
+
+def email_is_unique(email, db):
+    user = db.query(User).filter(User.email == email).first()
     if not user:
         return True
     return False

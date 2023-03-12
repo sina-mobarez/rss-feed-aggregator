@@ -13,8 +13,8 @@ def create_new_user(user: UserCreate, db: Session):
                 phone_number=user.phone_number,
                 is_active=True,
                 is_superuser=False,
-                date_registered= datetime.now().strftime("%Y-%m-%d"),
-                otp_key= generate_key(db)
+                date_registered=datetime.now().strftime("%Y-%m-%d"),
+                otp_key=generate_key(db)
                 )
     db.add(user)
     db.commit()
@@ -22,3 +22,10 @@ def create_new_user(user: UserCreate, db: Session):
     return user
 
 
+def get_users_list(db: Session):
+    users = db.query(User).all()
+    return users
+
+def get_user_by_id(pk, db: Session):
+    user = db.query(User).filter(User.id == pk).first()
+    return user
