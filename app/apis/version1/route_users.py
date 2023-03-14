@@ -3,7 +3,7 @@ from fastapi import APIRouter, status
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
 
-from schemas.users import UserCreate, ShowUser
+from schemas.users import UserCreate, ShowUser, Message
 from db.session import get_db
 from db.repository.users import create_new_user, get_users_list, get_user_by_id
 from core.otp import username_is_unique, phone_number_is_unique, email_is_unique
@@ -39,3 +39,14 @@ def get_user(pk: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"user not found")
     return user
+
+
+@router.delete('/{pk}', response_model=Message, status_code=status.HTTP_202_ACCEPTED)
+def delete_user(pk: int, db: Session = Depends(get_db)):
+    user = get_user_by_id(pk, db)
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"user not found")
+    user.is_active = False
+    db.commit()
+    return {'message': 'done!'}

@@ -1,5 +1,7 @@
 import pyotp
 from db.models.users import User
+from ippanel import Client
+from core.config import settings
 
 
 def generate_key(db):
@@ -35,3 +37,14 @@ def email_is_unique(email, db):
     if not user:
         return True
     return False
+
+
+def send_sms(receptor, code):
+    sms = Client(settings.SEND_SMS_API_KEY)
+    pattern_value = {'verification-code': f"{code}"}
+    try:
+        sms.send_pattern(settings.SEND_SMS_PATTERN_KEY,
+                         settings.SEND_SMS_SENDER_NUMBER, receptor, pattern_value)
+        return True
+    except Exception:
+        return False

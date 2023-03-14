@@ -11,7 +11,7 @@ class UserCreate(BaseModel):
 
     @validator("phone_number")
     def phone_validation(cls, v):
-        regex = r"(0|\+98)?([ ]|-|[()]){0,2}9[1|2|3|4]([ ]|-|[()]){0,2}(?:[0-9]([ ]|-|[()]){0,2}){8}"
+        regex = r"^(\+98|0)?9\d{9}$"
         if v and not re.search(regex, v, re.I):
             raise ValueError("Phone Number Invalid.")
         return v
@@ -30,6 +30,19 @@ class ShowUser(BaseModel):
     email: EmailStr
     phone_number: str
     is_active: bool
+    is_verified: bool
 
     class Config():
         orm_mode = True
+
+
+class Message(BaseModel):
+    message: str
+
+
+class SendCodeOTP(BaseModel):
+    upe: str
+
+
+class VerifyCodeOTP(SendCodeOTP):
+    code: str
