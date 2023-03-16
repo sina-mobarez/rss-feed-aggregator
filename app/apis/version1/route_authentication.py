@@ -2,10 +2,14 @@
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, status, Depends, HTTPException
 from db.session import get_db
-from db.repository.users import get_user_by_username_phone_number_email, authenticate_otp_code
+from db.repository.users import authenticate_user, get_user_by_username_phone_number_email, authenticate_otp_code
 from core.otp import send_sms
+from core.hashing import Hasher
 import pyotp
 from schemas.users import Message, SendCodeOTP, ShowUser, VerifyCodeOTP
+from schemas.token import Token
+from fastapi.security import OAuth2PasswordRequestForm
+from core.jwt import create_access_token, create_refresh_token
 
 
 router = APIRouter()
@@ -38,3 +42,18 @@ def verify_phone_number(upe: VerifyCodeOTP, db: Session = Depends(get_db)):
     user.is_verified = True
     db.commit()
     return user
+
+
+@router.post('/get-jwt-token', summary="Create access and refresh tokens for user", response_model=Token)
+def create_jwt_tokens(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+    user = authenticate_user(upe=form_data.username, password=form_data.password, db=db)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect email/username/phone-number or password"
+        )
+
+    return {
+        "access_token": create_access_token(user.username),
+        "refresh_token": create_refresh_token(user.username),
+    }

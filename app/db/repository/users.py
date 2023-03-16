@@ -36,17 +36,19 @@ def get_user_by_id(pk, db: Session):
 
 
 def get_user_by_username_phone_number_email(upe, db: Session):
-    get_user_phone_number = db.query(User).filter(User.phone_number == upe).first()
+    get_user_phone_number = db.query(User).filter(
+        User.phone_number == upe).first()
     get_user_email = db.query(User).filter(User.email == upe).first()
     get_user_username = db.query(User).filter(User.username == upe).first()
-    if not get_user_email or not get_user_phone_number or not get_user_username:
+    if (get_user_email or get_user_phone_number or get_user_username) is not None:
+        if get_user_email is not None:
+            return get_user_email
+        elif get_user_phone_number is not None:
+            return get_user_phone_number
+        elif get_user_username is not None:
+            return get_user_username
+    else:
         return False
-    elif get_user_email :
-        return get_user_email
-    elif get_user_phone_number:
-        return get_user_phone_number
-    elif get_user_phone_number:
-        return get_user_phone_number
 
 
 def authenticate_user(upe: str, password: str, db: Session):
