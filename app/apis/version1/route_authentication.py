@@ -4,7 +4,6 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from db.session import get_db
 from db.repository.users import authenticate_user, get_user_by_username_phone_number_email, authenticate_otp_code
 from core.otp import send_sms
-from core.hashing import Hasher
 import pyotp
 from schemas.users import Message, SendCodeOTP, ShowUser, VerifyCodeOTP
 from schemas.token import Token
@@ -44,7 +43,7 @@ def verify_phone_number(upe: VerifyCodeOTP, db: Session = Depends(get_db)):
     return user
 
 
-@router.post('/get-jwt-token', summary="Create access and refresh tokens for user", response_model=Token)
+@router.post('/get-jwt-token/', summary="Create access and refresh tokens for user", response_model=Token)
 def create_jwt_tokens(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(upe=form_data.username, password=form_data.password, db=db)
     if not user:

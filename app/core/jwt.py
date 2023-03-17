@@ -2,6 +2,7 @@ from typing import Any, Union
 import jwt
 from datetime import datetime, timedelta
 from core.config import settings
+from fastapi.security import OAuth2PasswordBearer
 
 
 def create_access_token(subject: Union[str, Any], expires_delta: int = None) -> str:
@@ -28,3 +29,9 @@ def create_refresh_token(subject: Union[str, Any], expires_delta: int = None) ->
     encoded_jwt = jwt.encode(
         to_encode, settings.JWT_REFRESH_SECRET_KEY, settings.ALGORITHM)
     return encoded_jwt
+
+
+config_set_jwt_token_to_head = OAuth2PasswordBearer(
+    tokenUrl="auth/get-jwt-token/",
+    scheme_name="JWT"
+)

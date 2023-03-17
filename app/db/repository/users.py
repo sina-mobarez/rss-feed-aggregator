@@ -1,9 +1,15 @@
+from fastapi import Depends, HTTPException, status
+import jwt
+from db.session import get_db
+from schemas.token import TokenData
+from core.config import settings
 from sqlalchemy.orm import Session
 from datetime import datetime
 from schemas.users import UserCreate
 from db.models.users import User
 from core.hashing import Hasher
 from core.otp import generate_key
+from core.jwt import config_set_jwt_token_to_head
 import pyotp
 
 
@@ -67,3 +73,32 @@ def authenticate_otp_code(user: User, code: int):
         return False
     otp = pyotp.TOTP(user.otp_key, interval=300)
     return otp.verify(provided_otp)
+
+
+def get_current_user(token: str = Depends(config_set_jwt_token_to_head)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY,
+                             algorithms=[settings.ALGORITHM])
+        upe: str = payload.get("sub")
+        if upe is None:
+            raise credentials_exception
+        token_data = TokenData(username=upe)
+    except Exception:
+        raise credentials_exception
+    db = next(get_db())
+    user = get_user_by_username_phone_number_email(
+        upe=token_data.username, db=db)
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+def get_current_active_user(current_user: User = Depends(get_current_user)):
+    if current_user.is_active == False:
+        raise HTTPException(status_code=400, detail="Inactive user")
+    return current_user

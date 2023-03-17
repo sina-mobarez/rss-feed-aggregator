@@ -2,10 +2,10 @@ from typing import List
 from fastapi import APIRouter, status
 from sqlalchemy.orm import Session
 from fastapi import Depends, HTTPException
-
+from db.models.users import User
 from schemas.users import UserCreate, ShowUser, Message
 from db.session import get_db
-from db.repository.users import create_new_user, get_users_list, get_user_by_id
+from db.repository.users import create_new_user, get_current_active_user, get_users_list, get_user_by_id
 from core.otp import username_is_unique, phone_number_is_unique, email_is_unique
 
 router = APIRouter()
@@ -50,3 +50,8 @@ def delete_user(pk: int, db: Session = Depends(get_db)):
     user.is_active = False
     db.commit()
     return {'message': 'done!'}
+
+
+@router.get("/me/", response_model=ShowUser)
+def read_users_me(user: User = Depends(get_current_active_user)):
+    return user
