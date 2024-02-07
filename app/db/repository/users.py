@@ -41,11 +41,11 @@ def get_user_by_id(pk, db: Session):
     return user
 
 
-def get_user_by_username_phone_number_email(upe, db: Session):
+def get_user_by_username_phone_number_email(username_or_phone_number_or_email, db: Session):
     get_user_phone_number = db.query(User).filter(
-        User.phone_number == upe).first()
-    get_user_email = db.query(User).filter(User.email == upe).first()
-    get_user_username = db.query(User).filter(User.username == upe).first()
+        User.phone_number == username_or_phone_number_or_email).first()
+    get_user_email = db.query(User).filter(User.email == username_or_phone_number_or_email).first()
+    get_user_username = db.query(User).filter(User.username == username_or_phone_number_or_email).first()
     if (get_user_email or get_user_phone_number or get_user_username) is not None:
         if get_user_email is not None:
             return get_user_email
@@ -57,8 +57,8 @@ def get_user_by_username_phone_number_email(upe, db: Session):
         return False
 
 
-def authenticate_user(upe: str, password: str, db: Session):
-    user = get_user_by_username_phone_number_email(upe=upe, db=db)
+def authenticate_user(username_or_phone_number_or_email: str, password: str, db: Session):
+    user = get_user_by_username_phone_number_email(username_or_phone_number_or_email=username_or_phone_number_or_email, db=db)
     if not user:
         return False
     if not Hasher.verify_password(password, user.hashed_password):
@@ -92,7 +92,7 @@ def get_current_user(token: str = Depends(config_set_jwt_token_to_head)):
         raise credentials_exception
     db = next(get_db())
     user = get_user_by_username_phone_number_email(
-        upe=token_data.username, db=db)
+        username_or_phone_number_or_email=token_data.username, db=db)
     if user is None:
         raise credentials_exception
     return user

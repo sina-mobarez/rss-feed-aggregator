@@ -1,13 +1,10 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
-
-from db.base_class import Base
+from sqlalchemy import Column, String, Boolean, DateTime
+from db.base import Base
 
 
 class User(Base):
-    id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, nullable=False)
-    email = Column(String, nullable=True, unique=True, index=True)
+    email = Column(String, nullable=True, unique=True)
     phone_number = Column(String, nullable=False, unique=True, index=True)
     hashed_password = Column(String, nullable=False)
     is_active = Column(Boolean(), default=True)
@@ -16,6 +13,3 @@ class User(Base):
     date_registered = Column(DateTime)
     otp_key = Column(String, nullable=False, unique=True)
 
-
-# owner_id =  Column(Integer,ForeignKey("user.id"))
-# owner = relationship("User",back_populates="jobs")

@@ -1,2 +1,2 @@
-fenv
-.env
+env
+__pycache__
